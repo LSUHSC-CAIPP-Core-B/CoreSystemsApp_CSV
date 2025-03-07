@@ -5,3 +5,4 @@ my_app/
 users.db
 .csv
 venv/
+backups/
