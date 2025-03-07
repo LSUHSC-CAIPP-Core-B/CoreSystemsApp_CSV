@@ -57,15 +57,17 @@ def orders():
 
         if cached_data is None:
             with app.app_context():
-                cache1.delete('cached_data')
+                defaultCache.delete('cached_data')
 
             sort = "Request Date"
             data = sorted(data, key=lambda d: d[sort], reverse=True)
 
             with app.app_context():
-                cache1.set('cached_data', data, timeout=3600)  # Cache for 1 hour (3600 seconds)
+                defaultCache.set('cached_data', data, timeout=3600)  # Cache for 1 hour (3600 seconds)
+
         else:
-            data = cached_data
+            with app.app_context():
+                data = cache1.get('cached_dataframe')
 
     page = request.args.get('page', 1, type=int)
     page, per_page, offset = get_page_args(page_parameter='page', 
@@ -176,11 +178,11 @@ def delete():
 @login_required(role=["coreB"])
 def downloadCSV():
     with app.app_context():
-        saved_data = cache1.get('cached_dataframe')
+        saved_data = cache1.get('cached_data')
     
     if saved_data is None:
         with app.app_context():
-            saved_data = defaultCache.get('cached_dataframe')
+            saved_data = defaultCache.get('cached_data')
 
     df = pd.DataFrame.from_dict(saved_data)
     csv = df.to_csv(index=False)
