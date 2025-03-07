@@ -4,3 +4,4 @@ my_app/
 .log
 users.db
 .csv
+venv/
