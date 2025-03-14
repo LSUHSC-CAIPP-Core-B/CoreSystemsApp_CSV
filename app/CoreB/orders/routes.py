@@ -67,7 +67,7 @@ def orders():
 
         else:
             with app.app_context():
-                data = cache1.get('cached_dataframe')
+                data = cache1.get('cached_data')
 
     page = request.args.get('page', 1, type=int)
     page, per_page, offset = get_page_args(page_parameter='page', 
