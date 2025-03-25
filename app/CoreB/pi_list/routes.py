@@ -1,8 +1,15 @@
-from flask import render_template, request, redirect, url_for, flash, make_response, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response, send_file, send_from_directory
 from flask_paginate import Pagination, get_page_args
 from app.CoreB.pi_list import bp
 from app.reader import Reader, find
 from app import login_required
+from flask_caching import Cache
+from io import BytesIO
+import pandas as pd
+
+app = Flask(__name__)
+cache1 = Cache(app, config={'CACHE_TYPE': 'simple'}) # Memory-based cache
+defaultCache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 information_reader = Reader("PI_ID - PI_ID.csv")
 
@@ -40,6 +47,9 @@ def pilist():
     POST: Dispaly filtered list of all PIs
     """
     # get PI list data
+    with app.app_context():
+        cache1.delete('cached_data')
+
     data = information_reader.getRawDataCSV(headers=True, dict=True)
 
     if request.method == 'POST':
@@ -53,6 +63,9 @@ def pilist():
         # sort dict
         if sort != 'Original':
             data = sorted(data, key=lambda d: d[sort])
+
+    with app.app_context():
+        cache1.set('cached_data', data, timeout=3600)
 
     page, per_page, offset = get_page_args(page_parameter='page', 
                                         per_page_parameter='per_page')
@@ -231,3 +244,22 @@ def update():
         response.headers["Pragma"] = "no-cache" # HTTP 1.0.
         response.headers["Expires"] = "0" # Proxies.
         return response
+    
+@bp.route('/downloadPIlistCSV', methods=['GET'])
+@login_required(role=["coreB"])
+def downloadCSV():
+    with app.app_context():
+        saved_data = cache1.get('cached_data')
+    
+    if saved_data is None:
+        with app.app_context():
+            saved_data = defaultCache.get('cached_data')
+
+    df = pd.DataFrame.from_dict(saved_data)
+    csv = df.to_csv(index=False)
+    
+    # Convert the CSV string to bytes and use BytesIO
+    csv_bytes = csv.encode('utf-8')
+    csv_io = BytesIO(csv_bytes)
+    
+    return send_file(csv_io, mimetype='text/csv', as_attachment=True, download_name='PI_list.csv')
