@@ -35,7 +35,7 @@
                         <h4> Service samples number</h4>
                     </div>
                     <div class="updatediv two">
-                        {% if val == 0%}
+                        {% if invoices[val].service_sample_number == 0%}
                         <input type = "number" name = "service {{ val }} qty"  value = "{{ sample_num }}" min="0" style="margin: auto;">
                         {% else %}
                         <input type = "number" name = "service {{ val }} qty"  value = "{{ invoices[val].service_sample_number }}" min="0" style="margin: auto;">
