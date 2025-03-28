@@ -1,6 +1,7 @@
 import pandas as pd
+from typing_extensions import Any
 
-def find(lst, key, value):
+def find(lst:list[dict], key:str, value:Any) -> int | None:
     """
     Find dict in list of dicts that have a specified value of specified key
 
@@ -24,27 +25,27 @@ class Reader:
     def __init__(self, filename) -> None:
         self.filename = filename
 
-    def getRawDataCSV(self, headers = True, dict = False):
+    def getRawDataCSV(self, has_headers:bool = True, as_dict:bool = False) -> pd.DataFrame | list[dict]:
         """
         Get data from file as it is
 
-        headers (bool): if there are headers to be read into header row
+        has_headers (bool): if there are headers to be read into header row
         dict (bool): if convert pandas DF to list of dictionaries
 
         return: DataFrame or dict of data
         """
-        if headers:
+        if has_headers:
             df = pd.read_csv(self.filename)
-            if dict:
+            if as_dict:
                 df = df.to_dict('records')
         else:
             df = pd.read_csv(self.filename, header=None)
-            if dict:
+            if as_dict:
                 df = df.to_dict('records')
 
         return df
     
-    def formatRawData2(self, df, nRows=0, nCols=1):
+    def formatRawData2(self, df:pd.DataFrame, row_num:int=0, col_num:int=1) -> pd.DataFrame:
         """
         Custom function to format CAIPP_Order.csv file
 
@@ -55,7 +56,7 @@ class Reader:
         return: formatted DataFrame data
         """
         # erase given number of cols and rows (data not for view)
-        df = df.T.iloc[nCols: , nRows:]
+        df = df.T.iloc[col_num: , row_num:]
         headers = df.iloc[0]
         df = df[1:]
 
@@ -74,7 +75,7 @@ class Reader:
 
         return df
 
-    def getFormattedDataCSV(self, withRaw = False, headers = False):
+    def getFormattedDataCSV(self, withRaw:bool = False, has_headers:bool = False) -> dict:
         """
         Read data and format it 
 
@@ -84,7 +85,7 @@ class Reader:
         return: dict of formatted data is specified with raw DataFrame
         """
         # read csv, headers has to be False to work with CAIPP_Orders.csv data format
-        df = self.getRawDataCSV(headers=headers)
+        df = self.getRawDataCSV(has_headers=has_headers)
         if withRaw:
             df_base = df
 
@@ -97,7 +98,7 @@ class Reader:
         else:
             return df_dict
         
-    def saveDataCSV(self, updated_dict, unprocessed_df):
+    def saveDataCSV(self, updated_dict:dict, unprocessed_df:pd.DataFrame) -> None:
         """
         Update data in csv file with new dict, additional formatting steps has to be done to match CAIPP_Order.csv format
 
@@ -117,7 +118,7 @@ class Reader:
         # save to file, header and index configuration ot match CAIPP_Order.csv format
         output_df.to_csv(self.filename, header=False, index=False)
 
-    def saveRawDataCSV(self, updated_dict):
+    def saveRawDataCSV(self, updated_dict:dict) -> None:
         """
         Update data in csv file with new dict
 
@@ -129,7 +130,7 @@ class Reader:
         # save to file, header and index configuration ot match CAIPP_Order.csv format
         output_df.to_csv(self.filename, header=True, index=False)
         
-    def deleteDataCSV(self, unprocessed_df, id):
+    def deleteDataCSV(self, unprocessed_df:pd.DataFrame, id:int) -> None:
         """
         Delete order in database
 
