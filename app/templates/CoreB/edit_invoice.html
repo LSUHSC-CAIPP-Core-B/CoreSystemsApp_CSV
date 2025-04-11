@@ -80,7 +80,8 @@
                         <h4> Discount amount [%] </h4>
                     </div>
                     <div class="updatediv two">
-                        <input type = "number" name = "service {{ val }} discount amount" value = "{{ percent_discount }}" min="0" max="100" step="1" style="margin: auto;">
+                        <input type = "number" name = "Percent Discount" value = "{{ percent_discount }}" min="0" max="100" step="1" style="margin: auto;">
+                        <input type="hidden" name="Total Price Sum" value="{{ total_price_sum }}">
                     </div>
                     {% endif %}
 
